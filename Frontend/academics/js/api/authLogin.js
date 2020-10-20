@@ -6,10 +6,10 @@ function Login() {
       role: document.getElementById("role").value,
     })
     .then((response) => {
-      response;
+      console.log(response.token);
+      localStorage.setItem("token", response.token);
       window.location.href =
         "http://localhost/Training-CourseProject/Frontend/academics/index.html";
-
     })
     .catch((response) => {
       window.location.href =
@@ -17,4 +17,10 @@ function Login() {
       alert("Username is not found. Invalid login credentials.");
       console.log(response.message);
     });
+}
+
+function LogOut() {
+  localStorage.clear();
+  window.location.href =
+    "http://localhost/Training-CourseProject/Frontend/academics/index2.html";
 }

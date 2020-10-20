@@ -37,10 +37,7 @@ const validateLogin = async (userCreds, res) => {
       SECRET,
       { expiresIn: "7 days" }
     );
-    return res.status(200).json({
-      message: "You are now logged in",
-      success: true,
-    });
+    return res.status(200).json({ token });
   } else {
     return res.status(401).json({
       message: "Incorrect password.",
@@ -94,9 +91,10 @@ const validateCourse = async (name, desc) => {
   return course ? false : true;
 };
 
-const requiredLogin = async (token) => {
+const requiredLogin = async () => {
   (req, res, next) => {
-    const token = req.headers["Authorization"];
+    const token =
+      req.body.token || req.query.token || req.headers["Authorization"];
     // decode token
     if (token) {
       // verifies secret and checks exp
