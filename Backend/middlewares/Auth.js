@@ -13,13 +13,13 @@ const validateLogin = async (userCreds, res) => {
   let { username, password, role } = userCreds;
   const user = await User.findOne({ username: username });
   if (!user) {
-    return res.status(404).json({
+    return res.status(401).json({
       message: "Username is not found. Invalid login credentials",
       success: false,
     });
   }
   if (user.role !== role) {
-    return res.status(403).json({
+    return res.status(401).json({
       message: "Please make sure you are logging in from the right portal.",
       success: false,
     });
@@ -37,22 +37,12 @@ const validateLogin = async (userCreds, res) => {
       SECRET,
       { expiresIn: "7 days" }
     );
-
-    let result = {
-      username: user.username,
-      password: user.password,
-      role: user.role,
-      token: `Bearer ${token}`,
-      expiresIn: 168,
-    };
-
     return res.status(200).json({
-      ...result,
       message: "You are now logged in",
       success: true,
     });
   } else {
-    return res.status(403).json({
+    return res.status(401).json({
       message: "Incorrect password.",
       success: false,
     });
@@ -67,7 +57,7 @@ const checkRole = (roles) => (req, res, next) => {
   if (roles.includes(req.user.role)) {
     next();
   } else
-    return res.status(403).json(
+    return res.status(401).json(
       (results = {
         message: "Unauthorized",
         success: false,
@@ -104,7 +94,34 @@ const validateCourse = async (name, desc) => {
   return course ? false : true;
 };
 
-const requiredLogin = async () => {};
+const requiredLogin = async (token) => {
+  (req, res, next) => {
+    const token = req.headers["Authorization"];
+    // decode token
+    if (token) {
+      // verifies secret and checks exp
+      jwt.verify(token, SECRET, (err, decoded) => {
+        if (err) {
+          console.error(err.toString());
+          //if (err) throw new Error(err)
+          return res
+            .status(401)
+            .json({ error: true, message: "Unauthorized access.", err });
+        }
+        console.log(`decoded>>${decoded}`);
+        req.decoded = decoded;
+        next();
+      });
+    } else {
+      // if there is no token
+      // return an error
+      return res.status(403).send({
+        error: true,
+        message: "No token provided.",
+      });
+    }
+  };
+};
 
 module.exports = {
   userAuth,
