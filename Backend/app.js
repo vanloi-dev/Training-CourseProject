@@ -20,7 +20,7 @@ const topicRoute = require("./routes/topic");
 //Middlewares
 
 var corsOptions = {
-  origin: "http://localhost",
+  origin: "http://localhost/",
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
